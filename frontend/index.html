@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Balance Checker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>💰 Wallet Balance Checker</h1>
+        <p class="subtitle">Vérifiez le solde de votre wallet Ethereum</p>
+
+        <div id="statusBar" class="status disconnected">
+            🔴 MetaMask non connecté
+        </div>
+
+        <div id="instructions" class="instructions">
+            <strong>📋 Instructions :</strong>
+            <ol>
+                <li>Déployez le smart contract WalletBalance.sol sur votre réseau</li>
+                <li>Copiez l'adresse du contrat déployé</li>
+                <li>Collez-la dans le champ ci-dessous</li>
+                <li>Cliquez sur "Connecter MetaMask"</li>
+            </ol>
+        </div>
+
+        <div class="input-group">
+            <label for="contractAddress">Adresse du Smart Contract :</label>
+            <input type="text" id="contractAddress" placeholder="0x..." value="">
+        </div>
+
+        <button id="connectBtn" class="btn-primary">
+            Connecter MetaMask
+        </button>
+
+        <div id="walletInfo" class="wallet-info hidden">
+            <div class="info-row">
+                <span class="label">Votre adresse :</span>
+                <span class="value" id="walletAddress">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Réseau :</span>
+                <span class="value" id="networkName">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Solde :</span>
+                <span class="value balance" id="balance">-</span>
+            </div>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <button id="refreshBtn" class="btn-secondary hidden">
+            🔄 Rafraîchir le solde
+        </button>
+    </div>
+
+    <!-- Ethers.js depuis CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
