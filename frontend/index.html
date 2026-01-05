@@ -29,7 +29,8 @@
 
         <div class="input-group">
             <label for="contractAddress">Adresse du Smart Contract :</label>
-            <input type="text" id="contractAddress" placeholder="0x..." value="">
+            <input type="text" id="contractAddress" placeholder="0x..."
+                value="0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512">
         </div>
 
         <button id="connectBtn" class="btn-primary">
@@ -37,6 +38,12 @@
         </button>
 
         <div id="walletInfo" class="wallet-info hidden">
+            <h2>Contract balance</h2>
+            <h2 id="contractBalance"></h2>
+
+            <input type="text" id="deposit"><br>
+            <button id="btnDeposit">Deposer</button>
+
             <div class="info-row">
                 <span class="label">Votre adresse :</span>
                 <span class="value" id="walletAddress">-</span>

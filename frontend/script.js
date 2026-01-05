@@ -45,6 +45,13 @@ const contractABI = [
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "deposit",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -96,6 +103,19 @@ const contractABI = [
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "showContractBalance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -129,6 +149,33 @@ const walletInfo = document.getElementById('walletInfo');
 const errorDiv = document.getElementById('error');
 const instructions = document.getElementById('instructions');
 const contractAddressInput = document.getElementById('contractAddress');
+
+const btnDeposit = document.getElementById('btnDeposit');
+const deposit = document.getElementById('deposit');
+const contractBalance = document.getElementById('contractBalance');
+
+btnDeposit.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const depositValue = deposit.value
+    const tx = await contract.deposit({
+        value: ethers.parseEther(depositValue)
+    });
+    await tx.wait();
+    await updateContractBalance();
+
+});
+
+
+async function updateContractBalance() {
+    // Appeler la fonction view du contrat
+    const balance = await contract.showContractBalance();
+
+    // Convertir de Wei en ETH
+    const balanceInEth = ethers.formatEther(balance);
+
+    // Afficher dans le HTML
+    contractBalance.textContent = balanceInEth;
+}
 
 // Vérifier si MetaMask est installé
 function isMetaMaskInstalled() {
@@ -246,6 +293,8 @@ async function connectWallet() {
 
         // Récupérer le solde initial
         await updateBalance();
+        await updateContractBalance();
+
 
     } catch (error) {
         console.error('Erreur de connexion:', error);
