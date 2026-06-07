@@ -124,11 +124,16 @@ let userAccount;
 // Éléments du DOM
 const connectBtn = document.getElementById('connectBtn');
 const refreshBtn = document.getElementById('refreshBtn');
+const sendBtn = document.getElementById('sendBtn');
 const statusBar = document.getElementById('statusBar');
 const walletInfo = document.getElementById('walletInfo');
+const transferPanel = document.getElementById('transferPanel');
 const errorDiv = document.getElementById('error');
+const txResult = document.getElementById('txResult');
 const instructions = document.getElementById('instructions');
 const contractAddressInput = document.getElementById('contractAddress');
+const recipientAddressInput = document.getElementById('recipientAddress');
+const transferAmountInput = document.getElementById('transferAmount');
 
 // Vérifier si MetaMask est installé
 function isMetaMaskInstalled() {
@@ -137,21 +142,27 @@ function isMetaMaskInstalled() {
 
 // Afficher une erreur
 function showError(message) {
-    errorDiv.textContent = '❌ ' + message;
+    errorDiv.textContent = 'X ' + message;
     errorDiv.classList.remove('hidden');
     setTimeout(() => {
         errorDiv.classList.add('hidden');
     }, 5000);
 }
 
+// Afficher le resultat d'une transaction
+function showTransactionResult(message) {
+    txResult.textContent = message;
+    txResult.classList.remove('hidden');
+}
+
 // Mettre à jour le statut
 function updateStatus(connected) {
     if (connected) {
-        statusBar.textContent = '🟢 MetaMask connecté';
+        statusBar.textContent = 'OK MetaMask connecté';
         statusBar.className = 'status connected';
         instructions.classList.add('hidden');
     } else {
-        statusBar.textContent = '🔴 MetaMask non connecté';
+        statusBar.textContent = 'KO MetaMask non connecté';
         statusBar.className = 'status disconnected';
     }
 }
@@ -181,7 +192,9 @@ async function updateBalance() {
         refreshBtn.disabled = true;
 
         // Récupérer le solde via le smart contract
-        const balanceWei = await contract.getMyBalance();
+        const balanceWei = contract
+            ? await contract.getMyBalance()
+            : await provider.getBalance(userAccount);
 
         // Convertir en ETH
         const balanceEth = ethers.formatEther(balanceWei);
@@ -207,7 +220,7 @@ async function connectWallet() {
     }
 
     const contractAddress = contractAddressInput.value.trim();
-    if (!contractAddress || !ethers.isAddress(contractAddress)) {
+    if (contractAddress && !ethers.isAddress(contractAddress)) {
         showError('Veuillez entrer une adresse de contrat valide');
         return;
     }
@@ -232,7 +245,7 @@ async function connectWallet() {
         const networkName = await getNetworkName(chainId);
 
         // Initialiser le contrat
-        contract = new ethers.Contract(contractAddress, contractABI, signer);
+        contract = contractAddress ? new ethers.Contract(contractAddress, contractABI, signer) : null;
 
         // Mettre à jour l'interface
         updateStatus(true);
@@ -240,6 +253,7 @@ async function connectWallet() {
         document.getElementById('networkName').textContent = networkName;
 
         walletInfo.classList.remove('hidden');
+        transferPanel.classList.remove('hidden');
         refreshBtn.classList.remove('hidden');
         connectBtn.classList.add('hidden');
         contractAddressInput.disabled = true;
@@ -258,6 +272,7 @@ async function connectWallet() {
 // Écouteurs d'événements
 connectBtn.addEventListener('click', connectWallet);
 refreshBtn.addEventListener('click', updateBalance);
+sendBtn.addEventListener('click', sendEth);
 
 // Détecter les changements de compte
 if (window.ethereum) {
@@ -271,7 +286,7 @@ if (window.ethereum) {
 
             // Recréer le contrat avec le nouveau signer
             const contractAddress = contractAddressInput.value.trim();
-            contract = new ethers.Contract(contractAddress, contractABI, signer);
+            contract = contractAddress ? new ethers.Contract(contractAddress, contractABI, signer) : null;
 
             await updateBalance();
         }
@@ -280,4 +295,53 @@ if (window.ethereum) {
     window.ethereum.on('chainChanged', () => {
         location.reload();
     });
+}
+
+// Envoyer de l'ETH avec MetaMask
+async function sendEth() {
+    if (!signer) {
+        showError('Connectez MetaMask avant d envoyer une transaction');
+        return;
+    }
+
+    const recipientAddress = recipientAddressInput.value.trim();
+    const amount = transferAmountInput.value.trim();
+
+    if (!ethers.isAddress(recipientAddress)) {
+        showError('Veuillez entrer une adresse destinataire valide');
+        return;
+    }
+
+    if (!amount || Number(amount) <= 0) {
+        showError('Veuillez entrer un montant superieur a 0');
+        return;
+    }
+
+    try {
+        const value = ethers.parseEther(amount);
+
+        sendBtn.innerHTML = '<span class="loader"></span>Confirmation...';
+        sendBtn.disabled = true;
+        txResult.classList.add('hidden');
+
+        const tx = await signer.sendTransaction({
+            to: recipientAddress,
+            value
+        });
+
+        showTransactionResult(`Transaction envoyee: ${tx.hash}`);
+        sendBtn.innerHTML = '<span class="loader"></span>En attente...';
+
+        await tx.wait();
+        showTransactionResult(`Transaction confirmee: ${tx.hash}`);
+        await updateBalance();
+
+        sendBtn.innerHTML = 'Envoyer';
+        sendBtn.disabled = false;
+    } catch (error) {
+        console.error('Erreur lors de l envoi:', error);
+        showError('Impossible d envoyer la transaction: ' + error.message);
+        sendBtn.innerHTML = 'Envoyer';
+        sendBtn.disabled = false;
+    }
 }

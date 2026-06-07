@@ -61,6 +61,19 @@ h1 {
     margin-bottom: 20px;
 }
 
+.transfer-panel {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.transfer-panel h2 {
+    color: #333;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
 .info-row {
     display: flex;
     justify-content: space-between;
@@ -186,6 +199,17 @@ button:disabled {
     margin-bottom: 20px;
     font-size: 14px;
     border: 1px solid #fcc;
+}
+
+.success {
+    background: #efe;
+    color: #273;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    border: 1px solid #cfc;
+    word-break: break-all;
 }
 
 .instructions {
