@@ -232,7 +232,7 @@ async function connectWallet() {
         // Initialiser le provider avec Ethers.js v6
         provider = new ethers.BrowserProvider(window.ethereum);
 
-        // Demander la connexion
+        // Demander la connexion à MetaMask
         await provider.send("eth_requestAccounts", []);
 
         // Récupérer le signer
@@ -240,6 +240,7 @@ async function connectWallet() {
         userAccount = await signer.getAddress();
 
         // Récupérer le réseau
+
         const network = await provider.getNetwork();
         const chainId = Number(network.chainId);
         const networkName = await getNetworkName(chainId);
