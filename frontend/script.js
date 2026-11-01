@@ -129,6 +129,9 @@ const walletInfo = document.getElementById('walletInfo');
 const errorDiv = document.getElementById('error');
 const instructions = document.getElementById('instructions');
 const contractAddressInput = document.getElementById('contractAddress');
+const sendForm = document.getElementById('sendForm');
+const sendBtn = document.getElementById('sendBtn');
+const sendStatus = document.getElementById('sendStatus');
 
 // Vérifier si MetaMask est installé
 function isMetaMaskInstalled() {
@@ -241,6 +244,7 @@ async function connectWallet() {
 
         walletInfo.classList.remove('hidden');
         refreshBtn.classList.remove('hidden');
+        sendForm.classList.remove('hidden');
         connectBtn.classList.add('hidden');
         contractAddressInput.disabled = true;
 
@@ -255,9 +259,59 @@ async function connectWallet() {
     }
 }
 
+// Convertir le montant saisi en Wei, null si invalide ou nul
+function parseAmount(value) {
+    try {
+        const wei = ethers.parseEther(value.trim().replace(',', '.'));
+        return wei > 0n ? wei : null;
+    } catch {
+        return null;
+    }
+}
+
+// Envoyer de l'ETH depuis le compte connecté
+async function sendEther(event) {
+    event.preventDefault();
+    sendStatus.classList.add('hidden');
+
+    const to = document.getElementById('recipient').value.trim();
+    if (!ethers.isAddress(to)) {
+        showError('Adresse du destinataire invalide');
+        return;
+    }
+
+    const value = parseAmount(document.getElementById('amount').value);
+    if (value === null) {
+        showError('Montant invalide');
+        return;
+    }
+
+    try {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="loader"></span>Envoi...';
+
+        const tx = await signer.sendTransaction({ to, value });
+        await tx.wait();
+
+        sendStatus.textContent = `✅ Transaction confirmée : ${tx.hash}`;
+        sendStatus.classList.remove('hidden');
+        sendForm.reset();
+        await updateBalance();
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi:', error);
+        showError(error.code === 'ACTION_REJECTED'
+            ? 'Transaction refusée dans MetaMask'
+            : 'Échec de l\'envoi: ' + (error.shortMessage || error.message));
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Envoyer';
+    }
+}
+
 // Écouteurs d'événements
 connectBtn.addEventListener('click', connectWallet);
 refreshBtn.addEventListener('click', updateBalance);
+sendForm.addEventListener('submit', sendEther);
 
 // Détecter les changements de compte
 if (window.ethereum) {

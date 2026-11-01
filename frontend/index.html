@@ -56,6 +56,19 @@
         <button id="refreshBtn" class="btn-secondary hidden">
             🔄 Rafraîchir le solde
         </button>
+
+        <form id="sendForm" class="hidden">
+            <div class="input-group">
+                <label for="recipient">Adresse du destinataire :</label>
+                <input type="text" id="recipient" placeholder="0x..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="amount">Montant (ETH) :</label>
+                <input type="text" id="amount" placeholder="0.1" inputmode="decimal" autocomplete="off">
+            </div>
+            <button type="submit" id="sendBtn" class="btn-primary">Envoyer</button>
+            <div id="sendStatus" class="status connected hidden"></div>
+        </form>
     </div>
 
     <!-- Ethers.js depuis CDN -->
